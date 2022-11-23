@@ -3,7 +3,7 @@ from flask import render_template,Flask,request
 
 app=Flask(__name__)
 
-movie = pd.read_csv("C:\\Users\\faris\\OneDrive\\Documents\\Projek UAS Alpro\\datasets\\movies.csv")
+movie = pd.read_csv("datasets\movies.csv")
 
 @app.route("/", methods=["POST", "GET"])
 def home():
