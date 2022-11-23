@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AutoComplete</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js">  
+    </script>  
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js">  
+    </script>  
+    
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
+        rel="stylesheet" type="text/css" />  
+        <style>
+            .ui-widget li:nth-child(n+6) {
+                display: none;
+            }
+          </style>
+</head>
+<body>
+    <h1>Whatsup</h1>
+    <input type="text" id="tags">
+    
+    <script>
+  $( function() {
+    var availableTags = [
+        {% for title in titles_select %}
+            "{{title}}",
+        {% endfor %}
+    ];
+    $( "#tags" ).autocomplete({
+      source: availableTags,
+    });
+  } );
+  $.extend($.ui.autocomplete.prototype.options, {
+	open: function(event, ui) {
+		$(this).autocomplete("widget").css({
+            "width": ($(this).width() + "px")
+        });
+    }
+})
+;
+$($('.ui-autocomplete')[0]).width(150);
+  </script>
+    
+</body>
+</html>
