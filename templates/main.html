@@ -9,37 +9,68 @@
     </script>  
     
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
-        rel="stylesheet" type="text/css" />  
+        rel="stylesheet" type="text/css" />
         <style>
-            .ui-widget li:nth-child(n+6) {
-                display: none;
-            }
-          </style>
+          .ui-widget li:nth-child(n+6) {
+              display: none;
+          }
+        </style>  
 </head>
 <body>
-    <h1>Whatsup</h1>
-    <input type="text" id="tags">
-    
+  <form action="/" method="POST">
+    <div style="width: 220px">
+      Title: <input type="text" id=0 name="titles" required>
+      Rating:<input type="number" step="any" name="ratings" min="1" max="5" required>
+    </div>
+    <button type="submit">Submit</button>
+</form>
+<div class="row justify-content-md-center mb-4">
+  {% if text_ann %}
+  <h3 id="text">{{ text_ann }}</h3>
+  {% endif %}
+</div>
+
+<div class="row justify-content-md-center mb-4">
+  <table class="styled-table">
+       <thead>
+        <tr>
+          <th>Movies you've rated</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+       <tbody>
+       {% for mov,rat in datazip %}
+          <tr>
+              <td>{{ mov }}</td>
+              <td>{{ rat }}</td>
+          </tr>
+       {% endfor %}
+       </tbody>
+ </table>
+</div>
+<form action="/reset/" method="get">
+  <button>Reset</button>
+  <button formaction="/output">Recommend me!</button>
+</form>
+
     <script>
   $( function() {
-    var availableTags = [
-        {% for title in titles_select %}
+    var availableTitle = [
+        {% for title in titles %}
             "{{title}}",
         {% endfor %}
     ];
-    $( "#tags" ).autocomplete({
-      source: availableTags,
+    $( "#0" ).autocomplete({
+      source: availableTitle,
     });
-  } );
-  $.extend($.ui.autocomplete.prototype.options, {
+  });
+    $.extend($.ui.autocomplete.prototype.options, {
 	open: function(event, ui) {
 		$(this).autocomplete("widget").css({
             "width": ($(this).width() + "px")
-        });
-    }
-})
-;
-$($('.ui-autocomplete')[0]).width(150);
+        });}
+  } );
+  $($('.ui-autocomplete')[0]).width(150);
   </script>
     
 </body>

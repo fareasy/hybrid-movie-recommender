@@ -14,8 +14,8 @@ import scipy.sparse as sp
 from scipy.sparse import csr_matrix
 
 #read data
-movie = pd.read_csv("datasets\movies.csv")
-rating = pd.read_csv("datasets\ratings.csv")
+movie = pd.read_csv("datasets\\movies.csv")
+rating = pd.read_csv("datasets\\ratings.csv")
 
 #remove movies with no genres
 movie = movie[movie["genres"].str.contains("(no genres listed)") == False]
@@ -63,3 +63,7 @@ eval_recall_lfm = lightfm_recall_at_k(model, train_interactions, k=10, item_feat
 print('Precision: train %.2f, test %.2f.' % (eval_precision_lfm, eval_recall_lfm))
 
 lightfm.evaluation.auc_score(model, test_interactions, train_interactions, item_features=item_features).mean()
+
+#get data function
+def getdata():
+    return data
