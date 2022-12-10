@@ -21,6 +21,7 @@ title_user=[]
 rating_user=[]
 list_em=[]
 
+
 #check whether user pick the same movie or not
 def check(movname,rating):
     if movname in title_user:
@@ -34,7 +35,9 @@ def check(movname,rating):
 @app.route("/", methods=["POST", "GET"])
 def home():
     text_ann=""
+    subtittle = ''
     if request.method=='POST':
+        subtittle = 'Penilaian Anda'
         title=request.form.get("titles")
         rating=request.form.get("ratings")
         val=check(title,rating)
@@ -42,8 +45,34 @@ def home():
             text_ann="You have rated this movie already"
         if val==1:
             text_ann="You gave "+str(title)+" a "+str(rating)
-    datazip=zip(title_user,rating_user)
-    return render_template("main.html",titles=titles_select,text_ann=text_ann,title_user=title_user,datazip=datazip)
+    
+    id_selected =[]
+    for ttl in title_user:
+            infos = movie[(movie['title']==ttl)]
+            Id=infos['movieId'].iloc[0]
+            urls=links[(links['movieId']==Id)]
+            url_tmdb=urls['tmdbId'].iloc[0]
+            id_film = str(url_tmdb)
+            id_tmdb = id_film[:-2]
+            id_selected.append(id_tmdb)
+    def getImg(Id):
+            mainUrl = "https://www.themoviedb.org"
+            filmUrl = mainUrl + "/movie/" + str(Id)
+            needed_headers = {'User-Agent': "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"}
+            respon = requests.get(filmUrl, headers = needed_headers )
+            rawhtml = respon.text
+            soup = BeautifulSoup(rawhtml, "html.parser")
+            for i in soup.find_all(class_ = "poster lazyload"):
+                url = i.get("data-src")
+                urlGb = mainUrl+url
+            return urlGb
+    list_linkGb = []
+    for id in id_selected:
+        linkGambar = getImg(id)
+        list_linkGb.append(linkGambar)
+
+    datazip=zip(title_user,rating_user, list_linkGb)
+    return render_template("main.html",titles=titles_select,text_ann=text_ann,title_user=title_user,datazip=datazip, subtittle=subtittle)
 
 @app.route('/reset/', methods=['GET','POST'])
 def reset():
@@ -59,6 +88,8 @@ def reset():
 @app.route("/output", methods=["POST", "GET"])
 def output():
     movie_recs=[]
+    subtittle = ''
+    subtittle = 'Rekomendasi Film Untuk Anda'
     if request.method == "GET":
         datazip2=zip(title_user,rating_user)
         for x,y in datazip2:
@@ -118,68 +149,75 @@ def output():
             text_ann='Not enough items'
             return render_template('main.html',text_ann=text_ann,titles=titles_select)
 
-        #nyoba tpi bingung --klo salah hapus aja
-        for movs in  movie_recs:
-            ids = []
-            infos = movie[(movie['title']==movs)]
+        
+        ids = []
+        for mov in movie_recs:
+            infos = movie[(movie['title']==mov)]
             Id=infos['movieId'].iloc[0]
             urls=links[(links['movieId']==Id)]
             url_tmdb=urls['tmdbId'].iloc[0]
-            ids.append(url_tmdb)
+            id_film = str(url_tmdb)
+            id_tmdb = id_film[:-2]
+            ids.append(id_tmdb)
+
         mainUrl = "https://www.themoviedb.org"
         def getUrl(Id):
-                    filmUrl = "https://www.themoviedb.org/movie/" + str(Id)
-                    return str(filmUrl)
+                            filmUrl = "https://www.themoviedb.org/movie/" + str(Id)
+                            return str(filmUrl)
         def scrap(url):
-                    needed_headers = {'User-Agent': "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"}
-                    respon = requests.get(url, headers = needed_headers )
-                    rawhtml = respon.text
-                    soup = BeautifulSoup(rawhtml, "html.parser")
-                    return soup
+                            needed_headers = {'User-Agent': "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"}
+                            respon = requests.get(url, headers = needed_headers )
+                            rawhtml = respon.text
+                            soup = BeautifulSoup(rawhtml, "html.parser")
+                            return soup
         def fullUrl(soup):
-                    for i in soup.find_all(class_ = "poster lazyload"):
-                        url = i.get("data-src")
-                        return mainUrl+url
+                            for i in soup.find_all(class_ = "poster lazyload"):
+                                url = i.get("data-src")
+                                return mainUrl+url
         def getJudul(soup):
-            for i in soup.find_all("h2"):
-                judul = i.get_text()
-            return judul
-        def urlLengkap(id):
-            filmUrl = str(getUrl(id))
-            film = scrap(filmUrl)
-            url = fullUrl(film)
-            return url
+                    for i in soup.find_all("h2"):
+                        judul = i.get_text()
+                    return judul
+        def getRating(soup):
+                            for i in soup.find_all(class_ = "user_score_chart"):
+                                ratingPersen = i.get("data-percent")
+                                rating = float(ratingPersen)/20
+                                return rating
+        def urlGambar(id):
+                    filmUrl = str(getUrl(id))
+                    film = scrap(filmUrl)
+                    url = fullUrl(film)
+                    return url
         def judul(id):
-            filmUrl = str(getUrl(id))
-            film = scrap(filmUrl)
-            judul = getJudul(film)
-            return judul
-        def getSinopsis(soup):
-            for i in soup.find_all(class_ = "overview"):
-                    sinopsis = i.get_text()
-            return sinopsis
-        def sinopsis(id):
-            filmUrl = str(getUrl(id))
-            film = scrap(filmUrl)
-            sinopsis = getSinopsis(film)
-            return sinopsis
+                    filmUrl = str(getUrl(id))
+                    film = scrap(filmUrl)
+                    judul = getJudul(film)
+                    return judul
+        def rat(id):
+                    filmUrl = str(getUrl(id))
+                    film = scrap(filmUrl)
+                    rating = getRating(film)
+                    return rating
+
 
         url_list=[]
-        url_judul=[]
-        url_film=[]
-        url_syn=[]
+        list_judul=[]
+        list_urlFilm = []
+        list_ratingFilm = []
 
         for id in ids:
-            url = urlLengkap(id)
-            judul_url = judul(id)
-            film_url = getUrl(id)
-            sinopsis_url = sinopsis(id)
-            url_list.append(url)
-            url_judul.append(judul_url)
-            url_film.append(film_url)
-            url_syn.append(sinopsis_url)
+                    urlGb = urlGambar(id)
+                    urlFilm = getUrl(id)
+                    judulFilm = judul(id)
+                    ratingFilm = rat(id)
+                    url_list.append(urlGb)
+                    list_judul.append(judulFilm)
+                    list_urlFilm.append(urlFilm)
+                    list_ratingFilm.append(ratingFilm)
         
-        return render_template("rec.html", movie_recs=movie_recs,url_list=url_list,url_judul=url_judul,url_film=url_film,url_syn=url_syn)
+        outputzip = zip(list_judul, list_ratingFilm, url_list, list_urlFilm)
+        
+        return render_template("main.html", outputzip=outputzip, subtittle=subtittle)
 
 if __name__ == '__main__':
     app.run(debug=True,threaded=True)

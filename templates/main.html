@@ -7,71 +7,150 @@
     
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js">  
     </script>  
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
     
-    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
-        rel="stylesheet" type="text/css" />
-        <style>
+    <style>
           .ui-widget li:nth-child(n+6) {
               display: none;
           }
-        </style>  
+          * {
+                font-family: 'Poppins';
+          }
+          
+          body {
+            background-color: #333333;
+            color: whitesmoke;
+          }
+
+          .center {
+            display: flex;
+            justify-content: center;
+          }
+
+          .rating {
+            width: 11px;
+          }
+
+          td {
+            width: 20%;
+            text-align: center;
+            vertical-align: top;
+            margin: 0 2px;
+          }
+
+          .posterFilm {
+            width: 150px;
+            display: inline;
+            margin: 0 10px;
+          }
+
+          a {
+            text-decoration: none;
+            color: whitesmoke;
+          }
+
+          .cardPoster {
+            margin-left: 15%;
+            margin-right: 15%;
+
+          }
+
+          tbody {
+            width: 80%;
+          }
+    </style>  
 </head>
 <body>
-  <form action="/" method="POST">
-    <div style="width: 220px">
-      Title: <input type="text" id=0 name="titles" required>
-      Rating:<input type="number" step="any" name="ratings" min="1" max="5" required>
+
+  <h1 class="center">MovieRec</h1>
+
+  <div class="center">
+    <form action="/" method="POST">
+      <div>
+        <input type="text" id=0 name="titles" required>
+        <input type="number" step="any" name="ratings" min="1" max="5" required>
+        <button type="submit">Submit</button>
+      </div>
+    </form>
+  </div>
+  <br>
+  <h4 class="center">{{subtittle}}</h4>
+ <br>
+  <div class="cardPoster">
+    <div class="center">
+      <table>
+          <tbody>
+          {% for mov,rat,img in datazip %}
+                  <td>
+                    <div >
+                      <img src={{img}} alt="" class="posterFilm">
+                      <br>
+                      {{ mov }}
+                      <br>
+                      <img src="static/rating.png" alt="" class="rating">
+                      {{rat}}
+                    </div>
+                  </td>
+          {% endfor %}
+          </tbody>
+    </table>
     </div>
-    <button type="submit">Submit</button>
-</form>
-<div class="row justify-content-md-center mb-4">
-  {% if text_ann %}
-  <h3 id="text">{{ text_ann }}</h3>
-  {% endif %}
-</div>
+  
+    <div class="center">
+      <table >
+          <tbody>
+            {% for mov,rat,img,film in outputzip %}
+              <td>
+                <div >
+                    <a href={{film}}>
+                      <img src={{img}} alt="" class="posterFilm">
+                      <br>
+                      {{ mov }}
+                      <br>
+                      <img src="static/rating.png" alt="" class="rating">
+                      {{rat}}
+                    </a>
+                </div>
+              </td>
+            {% endfor %}
+          </tbody>
+    </table>
+    </div>
+  </div>
 
-<div class="row justify-content-md-center mb-4">
-  <table class="styled-table">
-       <thead>
-        <tr>
-          <th>Movies you've rated</th>
-          <th>Score</th>
-        </tr>
-      </thead>
-       <tbody>
-       {% for mov,rat in datazip %}
-          <tr>
-              <td>{{ mov }}</td>
-              <td>{{ rat }}</td>
-          </tr>
-       {% endfor %}
-       </tbody>
- </table>
-</div>
-<form action="/reset/" method="get">
-  <button>Reset</button>
-  <button formaction="/output">Recommend me!</button>
-</form>
-
-    <script>
-  $( function() {
-    var availableTitle = [
-        {% for title in titles %}
-            "{{title}}",
-        {% endfor %}
-    ];
-    $( "#0" ).autocomplete({
-      source: availableTitle,
+  
+  <br>
+  <div class="center">
+    <form action="/reset/" method="get">
+      <button>Reset</button>
+      <button formaction="/output">Recommend me!</button>
+    </form>
+  </div>
+<br>
+  <div class="center">
+    {% if text_ann %}
+    <p id="text">Info: {{ text_ann }}</p>
+    {% endif %}
+  </div>
+      <script>
+    $( function() {
+      var availableTitle = [
+          {% for title in titles %}
+              "{{title}}",
+          {% endfor %}
+      ];
+      $( "#0" ).autocomplete({
+        source: availableTitle,
+      });
     });
-  });
-    $.extend($.ui.autocomplete.prototype.options, {
-	open: function(event, ui) {
-		$(this).autocomplete("widget").css({
-            "width": ($(this).width() + "px")
-        });}
-  } );
-  $($('.ui-autocomplete')[0]).width(150);
-  </script>
-    
+      $.extend($.ui.autocomplete.prototype.options, {
+    open: function(event, ui) {
+      $(this).autocomplete("widget").css({
+              "width": ($(this).width() + "px")
+          });}
+    } );
+    $($('.ui-autocomplete')[0]).width(150);
+    </script>
+      
 </body>
 </html>
